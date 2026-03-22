@@ -1,0 +1,47 @@
+name: Build
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - main
+
+jobs:
+  build:
+    name: Build
+    runs-on: macos-latest
+
+    steps:
+      - name: Checkout repository.
+        uses: actions/checkout@v4
+        with:
+          repository: Aermoss/Sentinel
+          token: ${{secrets.PERSONAL_ACCESS_TOKEN}}
+
+      - name: Setup flutter.
+        uses: subosito/flutter-action@v2
+        with:
+          channel: 'stable'
+          cache: true
+
+      - name: Install dependencies.
+        run: |
+          flutter pub get
+
+      - name: Build the application.
+        run: flutter build ios --release --no-codesign
+
+      - name: Package the application.
+        run: |
+          cd build/ios/iphoneos
+          mkdir Payload
+          cp -r Runner.app Payload/
+          zip -r sentinel.ipa Payload
+          rm -rf Payload
+
+      - name: Upload the artifact.
+        uses: actions/upload-artifact@v4
+        with:
+          name: sentinel-debug
+          path: build/ios/iphoneos/sentinel.ipa
+          retention-days: 7
