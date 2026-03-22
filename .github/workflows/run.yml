@@ -12,9 +12,6 @@ jobs:
     steps:
       - name: Checkout repository.
         uses: actions/checkout@v4
-        with:
-          repository: Aermoss/Relay
-          token: ${{secrets.PERSONAL_ACCESS_TOKEN}}
 
       - name: Install Tor.
         run: brew install tor
@@ -46,6 +43,12 @@ jobs:
             git commit -m "Update onion address."
             git push
           fi
+
+      - name: Checkout relay repository.
+        uses: actions/checkout@v4
+        with:
+          repository: Aermoss/Relay
+          token: ${{secrets.PERSONAL_ACCESS_TOKEN}}
 
       - name: Setup dart.
         uses: dart-lang/setup-dart@v1
