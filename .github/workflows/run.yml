@@ -5,6 +5,10 @@ on:
   schedule:
     - cron: "0 */6 * * *"
 
+concurrency:
+  group: "relay-runner"
+  cancel-in-progress: true
+
 jobs:
   run:
     runs-on: macos-latest
@@ -12,6 +16,8 @@ jobs:
     steps:
       - name: Checkout repository.
         uses: actions/checkout@v4
+        with:
+          token: ${{secrets.PERSONAL_ACCESS_TOKEN_2}}
 
       - name: Install Tor.
         run: brew install tor
