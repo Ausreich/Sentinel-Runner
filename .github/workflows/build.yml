@@ -2,9 +2,8 @@ name: Build
 
 on:
   workflow_dispatch:
-  push:
-    branches:
-      - main
+  repository_dispatch:
+    types: [build]
 
 jobs:
   build:
@@ -25,8 +24,7 @@ jobs:
           cache: true
 
       - name: Install dependencies.
-        run: |
-          flutter pub get
+        run: flutter pub get
 
       - name: Build the application.
         run: flutter build ios --release --no-codesign

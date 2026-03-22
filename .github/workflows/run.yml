@@ -1,0 +1,57 @@
+name: Run
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: "0 */6 * * *"
+
+jobs:
+  run:
+    runs-on: macos-latest
+
+    steps:
+      - name: Checkout repository.
+        uses: actions/checkout@v4
+        with:
+          repository: Aermoss/Relay
+          token: ${{secrets.PERSONAL_ACCESS_TOKEN}}
+
+      - name: Install Tor.
+        run: brew install tor
+
+      - name: Start hidden service.
+        run: |
+          mkdir -p hidden_service
+          chmod 700 hidden_service
+          echo "HiddenServiceDir $(pwd)/hidden_service" > torrc
+          echo "HiddenServicePort 59479 127.0.0.1:59479" >> torrc
+          tor -f torrc &
+          TIMEOUT=30
+
+          while [ ! -f hidden_service/hostname ]; do
+            if [ $TIMEOUT -le 0 ]; then
+              exit 1
+            fi
+
+            sleep 1
+            ((TIMEOUT--))
+          done
+
+          cp hidden_service/hostname hostname
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "github-actions[bot]@users.noreply.github.com"
+          git add hostname
+
+          if ! git diff --staged --quiet; then
+            git commit -m "Update onion address."
+            git push
+          fi
+
+      - name: Setup dart.
+        uses: dart-lang/setup-dart@v1
+
+      - name: Install dependencies.
+        run: dart pub get
+
+      - name: Start relay.
+        run: dart run
