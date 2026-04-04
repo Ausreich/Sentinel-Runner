@@ -64,3 +64,5 @@ jobs:
 
       - name: Start relay.
         run: dart run
+        env:
+          GITHUB_TOKEN: ${{secrets.PERSONAL_ACCESS_TOKEN}}
